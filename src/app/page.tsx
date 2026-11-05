@@ -4,8 +4,16 @@ import { useState, useEffect } from "react";
 import TodoForm from "./components/TodoForm";
 import { supabase } from "../lib/supabase";
 
+// Define the Todo data type
+type Todo = {
+  id: number;
+  title: string;
+  completed: boolean;
+  created_at?: string;
+};
+
 export default function Home() {
-  const [todos, setTodos] = useState([]);
+  const [todos, setTodos] = useState<Todo[]>([]);
   const [loading, setLoading] = useState(true);
 
   // READ
@@ -21,7 +29,7 @@ export default function Home() {
       return;
     }
 
-    setTodos(data);
+    setTodos((data ?? []) as Todo[]);
     setLoading(false);
   };
 
@@ -31,7 +39,9 @@ export default function Home() {
   }, []);
 
   // CREATE
-  const addTodo = async (task) => {
+  const addTodo = async (task: string) => {
+    if (!task.trim()) return;
+
     const { error } = await supabase.from("todos").insert({
       title: task.trim(),
       completed: false,
@@ -47,7 +57,7 @@ export default function Home() {
   };
 
   // UPDATE
-  const editTodo = async (id) => {
+  const editTodo = async (id: number) => {
     const newTitle = prompt("Enter updated task:");
 
     if (!newTitle || !newTitle.trim()) {
@@ -71,7 +81,7 @@ export default function Home() {
   };
 
   // DELETE
-  const deleteTodo = async (id) => {
+  const deleteTodo = async (id: number) => {
     const confirmDelete = confirm("Are you sure you want to delete this task?");
 
     if (!confirmDelete) {
@@ -90,7 +100,7 @@ export default function Home() {
   };
 
   // COMPLETE
-  const completeTodo = async (id, completed) => {
+  const completeTodo = async (id: number, completed: boolean) => {
     const { error } = await supabase
       .from("todos")
       .update({
@@ -109,10 +119,10 @@ export default function Home() {
 
   return (
     <div className="container">
+      {" "}
       <h1>My To-Do List</h1>
-
+     
       <TodoForm addTodo={addTodo} />
-
       <div className="todo-list">
         {loading ? (
           <p>Loading tasks...</p>
